@@ -20,28 +20,24 @@ class EspnScraper(object):
         self.game_ids = []
 
     def populate_games(self):
-        try:
-            scores = requests.get(
-                self.scoreboards_link, headers=EspnScraper.CHROME_HEADERS).text
+        scores = requests.get(
+            self.scoreboards_link, headers=EspnScraper.CHROME_HEADERS).text
 
-            soup = BeautifulSoup(scores, 'lxml')
-            for scoreboard in soup.find_all(class_='scoreboard'):
-                game_id = scoreboard.get('id')
-                if game_id:
-                    self.game_ids.append(game_id)
+        soup = BeautifulSoup(scores, 'lxml')
+        for scoreboard in soup.find_all(class_='scoreboard'):
+            game_id = scoreboard.get('id')
+            if game_id:
+                self.game_ids.append(game_id)
 
-            for idx, game_id in enumerate(self.game_ids):
-                print("Collecting game: " + str(idx+1))
-                game = self.parse_game(self.get_game(game_id))
-                if game:
-                    self.games.append(game)
-                    game.summarize_points()
-                else:
-                    print("Game " + str(idx+1) +
-                          " is done or has not started\n")
-        except Exception as e:
-            print(e)
-            print("Something went wrong (scrape.EspnScraper.populate_games)")
+        for idx, game_id in enumerate(self.game_ids):
+            print("Collecting game: " + str(idx+1))
+            game = self.parse_game(self.get_game(game_id))
+            if game:
+                self.games.append(game)
+                game.summarize_points()
+            else:
+                print("Game " + str(idx+1) +
+                      " is done or has not started\n")
 
     def get_game(self, id) -> BeautifulSoup:
         game = requests.get(
@@ -64,10 +60,10 @@ class EspnScraper(object):
         return Player({
             "team": team_name,
             "name": name.text if name else "",
-            "points": int(points.text) if points else 0,
-            "assists": int(assists.text) if assists else 0,
-            "rebounds": int(rebounds.text) if rebounds else 0,
-            "minutes": int(minutes.text) if minutes else 0,
+            "points": int(points.text) if points and points.text.isnumeric() else 0,
+            "assists": int(assists.text) if assists and assists.text.isnumeric() else 0,
+            "rebounds": int(rebounds.text) if rebounds and rebounds.text.isnumeric() else 0,
+            "minutes": int(minutes.text) if minutes and minutes.text.isnumeric() else 0,
             "fg": fg.text if fg else "0-0",
             "3pt": three_pt.text if three_pt else "0-0"
         })
@@ -92,13 +88,13 @@ class EspnScraper(object):
         })
 
     def parse_game(self, game, include_completed=False) -> Game:
-        teams = [self.parse_team(team) for team in self.get_teams(game)]
         game_details = game.find(class_='status-detail').text
         if not game_details or (game_details == "Final" and not include_completed):
             return None
         game_details = game_details.split(" - ")
         time_left = game_details[0]
         quarter = game_details[1]
+        teams = [self.parse_team(team) for team in self.get_teams(game)]
         return Game({
             "teams": teams,
             "quarter": quarter,
