@@ -37,7 +37,7 @@ class EspnScraper(object):
                 game.summarize_points()
             else:
                 print("Game " + str(idx+1) +
-                      " is done or has not started\n")
+                      " has not started\n")
 
     def get_game(self, id) -> BeautifulSoup:
         game = requests.get(
@@ -87,11 +87,18 @@ class EspnScraper(object):
             "players": players
         })
 
-    def parse_game(self, game, include_completed=False) -> Game:
+    def parse_game(self, game, include_completed=True) -> Game:
         game_details = game.find(class_='status-detail').text
-        if not game_details or (game_details == "Final" and not include_completed):
+        if not game_details:
             return None
-        game_details = game_details.replace("Halftime", "0:00 - 2nd")
+        elif game_details.startswith("End of"):
+            game_details = game_details.replace("End of", "0:00 -")
+        elif game_details == "Halftime":
+            game_details = game_details.replace("Halftime", "0:00 - 2nd")
+        elif game_details == "Final" and include_completed:
+            game_details = game_details.replace("Final", "0:00 - 4th")
+        else:
+            return None
         game_details = game_details.split(" - ")
         time_left = game_details[0]
         quarter = game_details[1]

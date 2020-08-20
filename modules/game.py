@@ -6,9 +6,17 @@ class Game(object):
         self.time_left = inp_dict["time_left"]
 
     def summarize_points(self):
-        print(f'{self.time_left} left in the {self.quarter}')
+        if self.quarter == "4th" and self.time_left == "0:00":
+            print('Game has ended')
+        elif self.quarter == "2nd" and self.time_left == "0:00":
+            print('Halftime')
+        else:
+            print(f'{self.time_left} left in the {self.quarter}')
         for team in self.teams:
             print(team.name, ":")
-            for player in sorted(team.players, key=lambda x: x.points, reverse=True):
+            for player in self.sort_players_by_points(team):
                 print(player)
             print("\n")
+
+    def sort_players_by_points(self, team):
+        return sorted(team.players, key=lambda x: x.points, reverse=True)
