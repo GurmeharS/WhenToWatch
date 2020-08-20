@@ -12,6 +12,8 @@ class Game(object):
             print('Halftime')
         else:
             print(f'{self.time_left} left in the {self.quarter}')
+        print(
+            f'{self.teams[0].name} {self.teams[0].points} - {self.teams[1].points} {self.teams[1].name}\n')
         for team in self.teams:
             print(team.name, ":")
             for player in self.sort_players_by_points(team):

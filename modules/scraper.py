@@ -19,7 +19,7 @@ class EspnScraper(object):
         self.games = []
         self.game_ids = []
 
-    def populate_games(self):
+    def populate_games(self, print_summary=False, include_completed=True):
         scores = requests.get(
             self.scoreboards_link, headers=EspnScraper.CHROME_HEADERS).text
 
@@ -31,13 +31,18 @@ class EspnScraper(object):
 
         for idx, game_id in enumerate(self.game_ids):
             print("Collecting game: " + str(idx+1))
-            game = self.parse_game(self.get_game(game_id))
+            game = self.parse_game(self.get_game(
+                game_id), include_completed=include_completed)
             if game:
                 self.games.append(game)
-                game.summarize_points()
-            else:
+                if print_summary:
+                    game.summarize_points()
+            elif include_completed:
                 print("Game " + str(idx+1) +
                       " has not started\n")
+            else:
+                print("Game " + str(idx+1) +
+                      " has ended or has not started\n")
 
     def get_game(self, id) -> BeautifulSoup:
         game = requests.get(
@@ -95,10 +100,10 @@ class EspnScraper(object):
             game_details = game_details.replace("End of", "0:00 -")
         elif game_details == "Halftime":
             game_details = game_details.replace("Halftime", "0:00 - 2nd")
-        elif game_details == "Final" and include_completed:
+        elif game_details == "Final":
+            if not include_completed:
+                return None
             game_details = game_details.replace("Final", "0:00 - 4th")
-        else:
-            return None
         game_details = game_details.split(" - ")
         time_left = game_details[0]
         quarter = game_details[1]
