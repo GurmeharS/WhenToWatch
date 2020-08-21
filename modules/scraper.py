@@ -70,7 +70,7 @@ class EspnScraper(object):
             "rebounds": int(rebounds.text) if rebounds and rebounds.text.isnumeric() else 0,
             "minutes": int(minutes.text) if minutes and minutes.text.isnumeric() else 0,
             "fg": fg.text if fg and re.match("[0-9]+-[0-9]+", fg.text) else "0-0",
-            "3pt": three_pt.text if three_pt else "0-0"
+            "3pt": three_pt.text if three_pt and re.match("[0-9]+-[0-9]+", three_pt.text) else "0-0"
         })
 
     def parse_team(self, team) -> Team:
@@ -92,18 +92,23 @@ class EspnScraper(object):
             "players": players
         })
 
+    # TODO: Parse OT, 2OT, etc.
     def parse_game(self, game, include_completed=True) -> Game:
         game_details = game.find(class_='status-detail').text
         if not game_details:
             return None
         elif game_details.startswith("End of"):
             game_details = game_details.replace("End of", "0:00 -")
+        elif game_details.startswith("Start of"):
+            game_details = game_details.replace("Start of", "12:00 -")
         elif game_details == "Halftime":
-            game_details = game_details.replace("Halftime", "0:00 - 2nd")
+            game_details = "0:00 - 2nd"
+        elif "OT" in game_details:
+            game_details = "0:00 - OT"  # TODO: Change this
         elif game_details == "Final":
             if not include_completed:
                 return None
-            game_details = game_details.replace("Final", "0:00 - 4th")
+            game_details = "0:00 - 4th"
         game_details = game_details.split(" - ")
         time_left = game_details[0]
         quarter = game_details[1]
