@@ -30,5 +30,5 @@ Each dictionary in the definitions list consists of:
          }
 - description - A verbal description/summary of the threshold
 
-### Footnotes:
+## Footnotes:
 Thanks for taking a look at my project. This is my first time working with a webscraper, any feedback is welcomed and appreciated!
