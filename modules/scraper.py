@@ -13,8 +13,8 @@ class EspnScraper(object):
     CHROME_HEADERS = {
         'User-Agent': "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Mobile Safari/537.36"}
 
-    def __init__(self):
-        self.scoreboards_link = EspnScraper.BASE_NBA_LINK + 'scoreboard/'
+    def __init__(self, link=None):
+        self.scoreboards_link = link if link else EspnScraper.BASE_NBA_LINK + 'scoreboard/'
         self.boxscore_link = EspnScraper.BASE_NBA_LINK + 'boxscore'
         self.games = []
         self.game_ids = []

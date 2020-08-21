@@ -6,6 +6,9 @@ class Game(object):
         self.point_differential = self.get_pt_differential()
         self.quarter = self.get_quarter(inp_dict["quarter"])
 
+    def __str__(self):
+        return f'{self.teams[0].name} {self.teams[0].points} - {self.teams[1].points} {self.teams[1].name}'
+
     def summarize_points(self):
         if self.quarter == "4th" and self.time_left == "0:00":
             print('Game has ended')
@@ -36,7 +39,7 @@ class Game(object):
         minutes_remaining, minutes_rhs = int(
             self.time_left.split(":")[0]), int(time.split(":")[0])
         seconds_remaining, seconds_rhs = float(
-            self.time_left.split(":")[1]), float(time.split(":"[1]))
+            self.time_left.split(":")[1]), float(time.split(":")[1])
         if operator == "gt":
             return minutes_remaining > minutes_rhs or (minutes_remaining == minutes_rhs and seconds_remaining > seconds_rhs)
         elif operator == "ge":
