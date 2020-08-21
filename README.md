@@ -29,3 +29,6 @@ Each dictionary in the definitions list consists of:
              value: <integer|float>
          }
 - description - A verbal description/summary of the threshold
+
+### Footnotes:
+Thanks for taking a look at my project. This is my first time working with a webscraper, any feedback is welcomed and appreciated!
