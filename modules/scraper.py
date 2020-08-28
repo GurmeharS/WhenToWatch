@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
-from modules.common import Common
+from modules.common import Common, GameStatus
 from modules.game import Game
 from modules.team import Team
 from modules.player import Player
@@ -31,18 +31,21 @@ class EspnScraper(object):
 
         for idx, game_id in enumerate(self.game_ids):
             print("Collecting game: " + str(idx+1))
-            game = self.parse_game(self.get_game(
+            game, status = self.parse_game(self.get_game(
                 game_id), include_completed=include_completed)
             if game:
                 self.games.append(game)
                 if print_summary:
                     game.summarize_points()
-            elif include_completed:
+            elif status == GameStatus.unknown:
                 print("Game " + str(idx+1) +
                       " has not started\n")
-            else:
+            elif status == GameStatus.ended:
                 print("Game " + str(idx+1) +
-                      " has ended or has not started\n")
+                      " has ended\n")
+            elif status == GameStatus.postponed:
+                print("Game " + str(idx+1) +
+                      " has been postponed\n")
 
     def get_game(self, id) -> BeautifulSoup:
         game = requests.get(
@@ -92,22 +95,21 @@ class EspnScraper(object):
             "players": players
         })
 
-    # TODO: Parse OT, 2OT, etc.
-    def parse_game(self, game, include_completed=True) -> Game:
+    def parse_game(self, game, include_completed=True) -> (Game, GameStatus):
         game_details = game.find(class_='status-detail').text
         if not game_details:
-            return None
+            return None, GameStatus.unknown
         elif game_details.startswith("End of"):
             game_details = game_details.replace("End of", "0:00 -")
         elif game_details.startswith("Start of"):
             game_details = game_details.replace("Start of", "12:00 -")
         elif game_details == "Halftime":
             game_details = "0:00 - 2nd"
-        elif "OT" in game_details:
-            game_details = "0:00 - OT"  # TODO: Change this
+        elif game_details == "Postponed":
+            return None, GameStatus.postponed
         elif game_details == "Final":
             if not include_completed:
-                return None
+                return None, GameStatus.ended
             game_details = "0:00 - 4th"
         game_details = game_details.split(" - ")
         time_left = game_details[0]
@@ -117,4 +119,4 @@ class EspnScraper(object):
             "teams": teams,
             "quarter": quarter,
             "time_left": time_left
-        })
+        }), GameStatus.running

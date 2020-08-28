@@ -7,7 +7,13 @@ class Game(object):
         self.quarter = self.get_quarter(inp_dict["quarter"])
 
     def __str__(self):
-        return f'{self.teams[0].name} {self.teams[0].points} - {self.teams[1].points} {self.teams[1].name}'
+        time = f'{self.time_left} left in {"OT" if self.quarter > 5 else "quarter " + str(self.quarter)}'
+        if self.time_left == "0:00":
+            if self.quarter == 4:
+                time = "Final"
+            elif self.quarter == 2:
+                time = "Halftime"
+        return f'{self.teams[0].name} {self.teams[0].points} - {self.teams[1].points} {self.teams[1].name} - ' + time
 
     def summarize_points(self):
         if self.quarter == "4th" and self.time_left == "0:00":

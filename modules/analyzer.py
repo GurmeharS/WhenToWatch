@@ -36,8 +36,6 @@ class Analyzer():
                     return False
                 met_threshold = self.compare(
                     getattr(game, stat), operator, value)
-                if met_threshold:
-                    print(game)
             elif scope == "team":
                 for team in game.teams:
                     if not hasattr(team, stat):
